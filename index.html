@@ -1,64 +1,133 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MicroHabit Tracker</title>
+  <title>MicroHabit Tracker - Dev Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+    }
+    /* Mode Gelap (Dark Mode Glow) */
+    .dark body {
+      background: radial-gradient(circle at top right, #2e0854, #0f0c1b, #05050a);
+      color: #f1f5f9;
+    }
+    .dark .glass-card {
+      background: rgba(23, 18, 38, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(139, 92, 246, 0.15);
+    }
+    .dark .glass-card-active {
+      background: rgba(46, 16, 101, 0.4);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    /* Mode Terang (Light Mode Clean) */
+    body {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      color: #0f172a;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    }
+    .glass-card-active {
+      background: rgba(243, 232, 255, 0.6);
+      border: 1px solid rgba(192, 132, 252, 0.4);
+    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+<body class="min-h-screen pb-20 transition-colors duration-300">
 
   <!-- Container Utama -->
-  <div class="max-w-md mx-auto px-4 pt-8">
+  <div class="max-w-md mx-auto px-4 pt-6">
     
+    <!-- Top Bar: Developer Info & Theme Toggle -->
+    <div class="flex items-center justify-between gap-2 mb-6">
+      <!-- Badge Developer -->
+      <div class="flex-1 bg-purple-100/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 rounded-xl p-2.5 backdrop-blur-md flex items-center justify-between transition-colors">
+        <div class="flex items-center gap-2 text-left">
+          <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-bold shadow-md">
+            NS
+          </div>
+          <div>
+            <p class="text-[10px] text-purple-600 dark:text-purple-300/70 font-semibold tracking-wider uppercase">Developed By</p>
+            <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Nugraha Setiadi</p>
+          </div>
+        </div>
+        <a href="mailto:nugrahasetiadi5@gmail.com" class="text-[11px] bg-purple-600 hover:bg-purple-700 dark:bg-purple-600/30 dark:hover:bg-purple-600/50 text-white dark:text-purple-200 px-2.5 py-1 rounded-lg transition flex items-center gap-1 shadow-sm">
+          ✉️ <span class="hidden sm:inline">Kontak</span>
+        </a>
+      </div>
+
+      <!-- Tombol Toggle Light/Dark Mode -->
+      <button onclick="toggleTheme()" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl text-lg flex items-center justify-center hover:scale-105 active:scale-95 transition shadow-sm" title="Ubah Tema">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+
     <!-- Header -->
     <header class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-2xl font-bold tracking-tight">MicroHabit</h1>
-        <p class="text-sm text-slate-400" id="current-date">Hari ini</p>
+        <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-purple-700 to-indigo-600 dark:from-purple-200 dark:via-indigo-200 dark:to-purple-400 bg-clip-text text-transparent">MicroHabit</h1>
+        <p class="text-xs text-slate-500 dark:text-purple-300/60 font-medium" id="current-date">Hari ini</p>
       </div>
-      <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-2 rounded-xl text-sm flex items-center gap-1 transition">
-        <span>+ Habit</span>
+      <button onclick="openModal()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20 dark:shadow-purple-900/40 transition active:scale-95">
+        <span class="text-sm">+</span> Habit
       </button>
     </header>
 
     <!-- Ringkasan Progress -->
-    <div class="bg-slate-800 p-4 rounded-2xl mb-6 border border-slate-700/50 flex items-center justify-between">
+    <div class="glass-card p-5 rounded-2xl mb-6 flex items-center justify-between relative overflow-hidden transition-colors">
       <div>
-        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Progress Harian</p>
-        <h2 class="text-xl font-bold mt-1" id="progress-text">0/0 Selesai</h2>
+        <p class="text-[10px] text-purple-600 dark:text-purple-300/70 font-bold uppercase tracking-widest mb-1">Progress Harian</p>
+        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white" id="progress-text">0/0 Selesai</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="progress-subtext">0% dari target hari ini</p>
       </div>
-      <div class="w-16 h-16 relative flex items-center justify-center">
+      <div class="w-20 h-20 relative flex items-center justify-center">
         <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-          <path class="text-slate-700" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-          <path id="progress-ring" class="text-indigo-500 transition-all duration-500 ease-out" stroke-dasharray="0, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="text-slate-200 dark:text-purple-950/60" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path id="progress-ring" class="text-purple-600 dark:text-purple-500 transition-all duration-500 ease-out" stroke-dasharray="0, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
         </svg>
-        <span class="absolute text-xs font-semibold" id="progress-percent">0%</span>
+        <span class="absolute text-sm font-extrabold text-purple-700 dark:text-purple-200" id="progress-percent">0%</span>
       </div>
     </div>
 
     <!-- Daftar Habits -->
     <div class="space-y-3" id="habit-list">
-      <!-- Habit cards akan di-render di sini via JS -->
+      <!-- Habit cards di-render otomatis via JS -->
     </div>
 
   </div>
 
+  <!-- Footer Info Developer -->
+  <footer class="mt-12 text-center text-xs text-slate-500 dark:text-purple-300/40 transition-colors">
+    <p>© 2026 MicroHabit • Created by <span class="text-purple-700 dark:text-purple-300 font-semibold">Nugraha Setiadi</span></p>
+    <p class="text-[10px] mt-1 text-slate-400 dark:text-purple-300/30">nugrahasetiadi5@gmail.com</p>
+  </footer>
+
   <!-- Modal Tambah Habit -->
-  <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm">
-      <h3 class="text-lg font-bold mb-4">Tambah Micro-Habit</h3>
+  <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+    <div class="glass-card border border-slate-200 dark:border-purple-500/30 rounded-2xl p-6 w-full max-w-sm">
+      <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Tambah Micro-Habit</h3>
       <form id="habit-form" onsubmit="addHabit(event)" class="space-y-4">
         <div>
-          <label class="block text-xs text-slate-400 mb-1">Nama Kebiasaan (&lt; 5 menit)</label>
-          <input type="text" id="habit-title" required placeholder="Misal: Baca 1 Halaman Buku" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 text-slate-100">
+          <label class="block text-xs text-slate-600 dark:text-purple-300/80 font-medium mb-1.5">Nama Kebiasaan (&lt; 5 menit)</label>
+          <input type="text" id="habit-title" required placeholder="Misal: Minum Segelas Air" class="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-purple-500/30 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-purple-500 text-slate-900 dark:text-slate-100 placeholder-slate-400">
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1">Kategori</label>
-          <select id="habit-category" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 text-slate-100">
+          <label class="block text-xs text-slate-600 dark:text-purple-300/80 font-medium mb-1.5">Kategori</label>
+          <select id="habit-category" class="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-purple-500/30 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-purple-500 text-slate-900 dark:text-slate-100">
             <option value="Kesehatan">Kesehatan</option>
             <option value="Produktif">Produktif</option>
             <option value="Mindfulness">Mindfulness</option>
@@ -66,22 +135,43 @@
           </select>
         </div>
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm text-slate-400 hover:text-slate-200">Batal</button>
-          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm rounded-xl font-medium">Simpan</button>
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">Batal</button>
+          <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 text-xs rounded-xl font-semibold text-white shadow-md">Simpan</button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-    // Inisialisasi Tanggal
+    // Tanggal
     const todayStr = new Date().toISOString().split('T')[0];
-    document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' });
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Load / Init Data dari LocalStorage
+    // Mode Gelap/Terang (Theme Toggle)
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateThemeIcon(isDark);
+    }
+
+    function updateThemeIcon(isDark) {
+      document.getElementById('theme-icon').innerText = isDark ? '🌙' : '☀️';
+    }
+
+    // Init Theme dari LocalStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+      updateThemeIcon(false);
+    } else {
+      document.documentElement.classList.add('dark');
+      updateThemeIcon(true);
+    }
+
+    // Load Data
     let habits = JSON.parse(localStorage.getItem('microhabits')) || [
-      { id: '1', title: 'Minum Segelas Air', category: 'Kesehatan', streak: 3, completedDates: [todayStr] },
-      { id: '2', title: 'Stretching 2 Menit', category: 'Kesehatan', streak: 1, completedDates: [] }
+      { id: '1', title: 'Minum Segelas Air', category: 'Kesehatan', streak: 1, completedDates: [todayStr] },
+      { id: '2', title: 'Stretching 2 Menit', category: 'Kesehatan', streak: 1, completedDates: [todayStr] }
     ];
 
     function saveState() {
@@ -143,21 +233,21 @@
         if (isDone) completedCount++;
 
         const card = document.createElement('div');
-        card.className = `p-4 rounded-2xl border transition-all flex items-center justify-between ${isDone ? 'bg-indigo-950/30 border-indigo-500/40' : 'bg-slate-800 border-slate-700/50'}`;
+        card.className = `p-4 rounded-2xl transition-all duration-300 flex items-center justify-between ${isDone ? 'glass-card-active' : 'glass-card'}`;
         card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <button onclick="toggleHabit('${h.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center border transition ${isDone ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-600 text-transparent hover:border-slate-400'}">
+          <div class="flex items-center gap-3.5">
+            <button onclick="toggleHabit('${h.id}')" class="w-8 h-8 rounded-xl flex items-center justify-center border transition-all duration-200 ${isDone ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 border-purple-400 text-white shadow-md' : 'border-slate-300 dark:border-purple-500/30 text-transparent hover:border-purple-400 bg-slate-100/50 dark:bg-purple-950/20'}">
               ✓
             </button>
             <div>
-              <p class="font-medium text-sm ${isDone ? 'line-through text-slate-400' : 'text-slate-100'}">${h.title}</p>
-              <div class="flex items-center gap-2 mt-0.5">
-                <span class="text-[10px] bg-slate-700/60 text-slate-300 px-2 py-0.5 rounded-full">${h.category}</span>
-                <span class="text-xs text-amber-400 flex items-center gap-0.5">🔥 ${h.streak} hari</span>
+              <p class="font-semibold text-sm ${isDone ? 'line-through text-slate-400 dark:text-slate-400' : 'text-slate-800 dark:text-slate-100'}">${h.title}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-[10px] bg-purple-100 dark:bg-purple-900/40 border border-purple-200 dark:border-purple-500/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-md font-medium">${h.category}</span>
+                <span class="text-xs text-amber-500 dark:text-amber-400 font-medium flex items-center gap-0.5">🔥 ${h.streak} hari</span>
               </div>
             </div>
           </div>
-          <button onclick="deleteHabit('${h.id}')" class="text-slate-500 hover:text-rose-400 text-sm px-2">✕</button>
+          <button onclick="deleteHabit('${h.id}')" class="text-slate-400 hover:text-rose-500 dark:text-purple-300/30 dark:hover:text-rose-400 text-xs px-2 py-1 transition">Hapus</button>
         `;
         listEl.appendChild(card);
       });
@@ -166,6 +256,7 @@
       const total = habits.length;
       const percent = total === 0 ? 0 : Math.round((completedCount / total) * 100);
       document.getElementById('progress-text').innerText = `${completedCount}/${total} Selesai`;
+      document.getElementById('progress-subtext').innerText = total === 0 ? 'Belum ada habit' : `${completedCount} dari ${total} habit selesai`;
       document.getElementById('progress-percent').innerText = `${percent}%`;
       document.getElementById('progress-ring').setAttribute('stroke-dasharray', `${percent}, 100`);
     }
