@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MicroHabit Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+  <!-- Container Utama -->
+  <div class="max-w-md mx-auto px-4 pt-8">
+    
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">MicroHabit</h1>
+        <p class="text-sm text-slate-400" id="current-date">Hari ini</p>
+      </div>
+      <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-2 rounded-xl text-sm flex items-center gap-1 transition">
+        <span>+ Habit</span>
+      </button>
+    </header>
+
+    <!-- Ringkasan Progress -->
+    <div class="bg-slate-800 p-4 rounded-2xl mb-6 border border-slate-700/50 flex items-center justify-between">
+      <div>
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Progress Harian</p>
+        <h2 class="text-xl font-bold mt-1" id="progress-text">0/0 Selesai</h2>
+      </div>
+      <div class="w-16 h-16 relative flex items-center justify-center">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-slate-700" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path id="progress-ring" class="text-indigo-500 transition-all duration-500 ease-out" stroke-dasharray="0, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+        <span class="absolute text-xs font-semibold" id="progress-percent">0%</span>
+      </div>
+    </div>
+
+    <!-- Daftar Habits -->
+    <div class="space-y-3" id="habit-list">
+      <!-- Habit cards akan di-render di sini via JS -->
+    </div>
+
+  </div>
+
+  <!-- Modal Tambah Habit -->
+  <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm">
+      <h3 class="text-lg font-bold mb-4">Tambah Micro-Habit</h3>
+      <form id="habit-form" onsubmit="addHabit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Nama Kebiasaan (&lt; 5 menit)</label>
+          <input type="text" id="habit-title" required placeholder="Misal: Baca 1 Halaman Buku" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 text-slate-100">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Kategori</label>
+          <select id="habit-category" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 text-slate-100">
+            <option value="Kesehatan">Kesehatan</option>
+            <option value="Produktif">Produktif</option>
+            <option value="Mindfulness">Mindfulness</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm text-slate-400 hover:text-slate-200">Batal</button>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm rounded-xl font-medium">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Inisialisasi Tanggal
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' });
+
+    // Load / Init Data dari LocalStorage
+    let habits = JSON.parse(localStorage.getItem('microhabits')) || [
+      { id: '1', title: 'Minum Segelas Air', category: 'Kesehatan', streak: 3, completedDates: [todayStr] },
+      { id: '2', title: 'Stretching 2 Menit', category: 'Kesehatan', streak: 1, completedDates: [] }
+    ];
+
+    function saveState() {
+      localStorage.setItem('microhabits', JSON.stringify(habits));
+      render();
+    }
+
+    function toggleHabit(id) {
+      habits = habits.map(h => {
+        if (h.id === id) {
+          const isDone = h.completedDates.includes(todayStr);
+          if (isDone) {
+            h.completedDates = h.completedDates.filter(d => d !== todayStr);
+            h.streak = Math.max(0, h.streak - 1);
+          } else {
+            h.completedDates.push(todayStr);
+            h.streak += 1;
+          }
+        }
+        return h;
+      });
+      saveState();
+    }
+
+    function deleteHabit(id) {
+      habits = habits.filter(h => h.id !== id);
+      saveState();
+    }
+
+    function addHabit(e) {
+      e.preventDefault();
+      const title = document.getElementById('habit-title').value;
+      const category = document.getElementById('habit-category').value;
+      
+      habits.push({
+        id: Date.now().toString(),
+        title,
+        category,
+        streak: 0,
+        completedDates: []
+      });
+
+      document.getElementById('habit-title').value = '';
+      closeModal();
+      saveState();
+    }
+
+    function openModal() { document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); }
+    function closeModal() { document.getElementById('modal').classList.add('hidden'); document.getElementById('modal').classList.remove('flex'); }
+
+    function render() {
+      const listEl = document.getElementById('habit-list');
+      listEl.innerHTML = '';
+
+      let completedCount = 0;
+
+      habits.forEach(h => {
+        const isDone = h.completedDates.includes(todayStr);
+        if (isDone) completedCount++;
+
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-2xl border transition-all flex items-center justify-between ${isDone ? 'bg-indigo-950/30 border-indigo-500/40' : 'bg-slate-800 border-slate-700/50'}`;
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <button onclick="toggleHabit('${h.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center border transition ${isDone ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-600 text-transparent hover:border-slate-400'}">
+              ✓
+            </button>
+            <div>
+              <p class="font-medium text-sm ${isDone ? 'line-through text-slate-400' : 'text-slate-100'}">${h.title}</p>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-[10px] bg-slate-700/60 text-slate-300 px-2 py-0.5 rounded-full">${h.category}</span>
+                <span class="text-xs text-amber-400 flex items-center gap-0.5">🔥 ${h.streak} hari</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="deleteHabit('${h.id}')" class="text-slate-500 hover:text-rose-400 text-sm px-2">✕</button>
+        `;
+        listEl.appendChild(card);
+      });
+
+      // Update Progress Ring
+      const total = habits.length;
+      const percent = total === 0 ? 0 : Math.round((completedCount / total) * 100);
+      document.getElementById('progress-text').innerText = `${completedCount}/${total} Selesai`;
+      document.getElementById('progress-percent').innerText = `${percent}%`;
+      document.getElementById('progress-ring').setAttribute('stroke-dasharray', `${percent}, 100`);
+    }
+
+    // Initial Render
+    render();
+  </script>
+</body>
+</html>
